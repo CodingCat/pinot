@@ -23,6 +23,7 @@ import com.linkedin.pinot.common.metadata.segment.RealtimeSegmentZKMetadata;
 import com.linkedin.pinot.common.metrics.ValidationMetrics;
 import com.linkedin.pinot.common.utils.CommonConstants.Helix.TableType;
 import com.linkedin.pinot.common.utils.HLCSegmentName;
+import com.linkedin.pinot.common.utils.PeriodicTask;
 import com.linkedin.pinot.common.utils.SegmentName;
 import com.linkedin.pinot.common.utils.time.TimeUtils;
 import com.linkedin.pinot.controller.ControllerConf;
@@ -33,9 +34,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import org.apache.helix.ZNRecord;
 import org.apache.helix.store.zk.ZkHelixPropertyStore;
@@ -50,12 +48,10 @@ import org.slf4j.LoggerFactory;
  * that the offline push delay isn't too high.
  */
 
-public class ValidationManager {
+public class ValidationManager extends PeriodicTask {
   private static final Logger LOGGER = LoggerFactory.getLogger(ValidationManager.class);
   private final ValidationMetrics _validationMetrics;
-  private final ScheduledExecutorService _executorService;
   private final PinotHelixResourceManager _pinotHelixResourceManager;
-  private final long _validationIntervalSeconds;
   private final boolean _autoCreateOnError;
   private final PinotLLCRealtimeSegmentManager _llcRealtimeSegmentManager;
 
@@ -68,47 +64,16 @@ public class ValidationManager {
    */
   public ValidationManager(ValidationMetrics validationMetrics, PinotHelixResourceManager pinotHelixResourceManager,
       ControllerConf config, PinotLLCRealtimeSegmentManager llcRealtimeSegmentManager) {
+    super("ValidationManager", config.getValidationControllerFrequencyInSeconds());
     _validationMetrics = validationMetrics;
     _pinotHelixResourceManager = pinotHelixResourceManager;
-    _validationIntervalSeconds = config.getValidationControllerFrequencyInSeconds();
     _autoCreateOnError = true;
     _llcRealtimeSegmentManager = llcRealtimeSegmentManager;
-
-    _executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-      @Override
-      public Thread newThread(Runnable runnable) {
-        Thread thread = new Thread(runnable);
-        thread.setName("PinotValidationManagerExecutorService");
-        return thread;
-      }
-    });
   }
 
-  /**
-   * Starts the validation manager.
-   */
-  public void start() {
-    LOGGER.info("Starting validation manager");
-
-    // Set up an executor that executes validation tasks periodically
-    _executorService.scheduleWithFixedDelay(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          runValidation();
-        } catch (Exception e) {
-          LOGGER.warn("Caught exception while running validation", e);
-        }
-      }
-    }, 120, _validationIntervalSeconds, TimeUnit.SECONDS);
-  }
-
-  /**
-   * Stops the validation manager.
-   */
-  public void stop() {
-    // Shut down the executor
-    _executorService.shutdown();
+  @Override
+  public void runTask() {
+    runValidation();
   }
 
   /**
