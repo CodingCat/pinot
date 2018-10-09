@@ -23,12 +23,12 @@ import com.linkedin.pinot.common.metadata.segment.RealtimeSegmentZKMetadata;
 import com.linkedin.pinot.common.metrics.ValidationMetrics;
 import com.linkedin.pinot.common.utils.CommonConstants.Helix.TableType;
 import com.linkedin.pinot.common.utils.HLCSegmentName;
-import com.linkedin.pinot.common.utils.PeriodicTask;
 import com.linkedin.pinot.common.utils.SegmentName;
 import com.linkedin.pinot.common.utils.time.TimeUtils;
 import com.linkedin.pinot.controller.ControllerConf;
 import com.linkedin.pinot.controller.helix.core.PinotHelixResourceManager;
 import com.linkedin.pinot.controller.helix.core.realtime.PinotLLCRealtimeSegmentManager;
+import com.linkedin.pinot.core.periodictask.BasePeriodicTask;
 import com.linkedin.pinot.core.realtime.stream.StreamConfig;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  * that the offline push delay isn't too high.
  */
 
-public class ValidationManager extends PeriodicTask {
+public class ValidationManager extends BasePeriodicTask {
   private static final Logger LOGGER = LoggerFactory.getLogger(ValidationManager.class);
   private final ValidationMetrics _validationMetrics;
   private final PinotHelixResourceManager _pinotHelixResourceManager;
@@ -64,7 +64,8 @@ public class ValidationManager extends PeriodicTask {
    */
   public ValidationManager(ValidationMetrics validationMetrics, PinotHelixResourceManager pinotHelixResourceManager,
       ControllerConf config, PinotLLCRealtimeSegmentManager llcRealtimeSegmentManager) {
-    super("ValidationManager", config.getValidationControllerFrequencyInSeconds());
+    super("ValidationManager", config.getValidationControllerFrequencyInSeconds(),
+        config.getValidationControllerFrequencyInSeconds() / 2);
     _validationMetrics = validationMetrics;
     _pinotHelixResourceManager = pinotHelixResourceManager;
     _autoCreateOnError = true;
