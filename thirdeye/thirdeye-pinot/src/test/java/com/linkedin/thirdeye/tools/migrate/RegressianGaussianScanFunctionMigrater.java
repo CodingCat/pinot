@@ -30,6 +30,7 @@ public class RegressianGaussianScanFunctionMigrater extends BaseAnomalyFunctionM
         put(variableConfigKey("scanNumSimulations"), "500");
         put(variableConfigKey("pValueThreshold"), "0.01");
         put(variableConfigKey("scanTargetNumAnomalies"), "1");
+        put(DOWNGRADE_PREFIX + "." + variableConfigKey("seasonalities"), "");
       }
     });
     directKeyMap = ImmutableMap.copyOf(new HashMap<String, String>(){
