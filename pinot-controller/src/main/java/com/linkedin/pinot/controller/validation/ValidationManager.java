@@ -73,7 +73,7 @@ public class ValidationManager extends BasePeriodicTask {
   }
 
   @Override
-  public void runTask() {
+  public void run() {
     runValidation();
   }
 
@@ -87,6 +87,7 @@ public class ValidationManager extends BasePeriodicTask {
       return;
     }
 
+    long startTime = System.currentTimeMillis();
     LOGGER.info("Starting validation");
     // Fetch the list of tables
     List<String> allTableNames = _pinotHelixResourceManager.getAllTables();
@@ -114,7 +115,7 @@ public class ValidationManager extends BasePeriodicTask {
         LOGGER.warn("Exception validating table: {}", tableNameWithType, e);
       }
     }
-    LOGGER.info("Validation completed");
+    LOGGER.info("Validation completed in {}ms.", (System.currentTimeMillis() - startTime));
   }
 
   private void updateRealtimeDocumentCount(ZkHelixPropertyStore<ZNRecord> propertystore, TableConfig tableConfig) {

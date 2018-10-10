@@ -27,6 +27,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
+
 public class ControllerConf extends PropertiesConfiguration {
   private static final String CONTROLLER_VIP_HOST = "controller.vip.host";
   private static final String CONTROLLER_VIP_PORT = "controller.vip.port";
@@ -37,7 +38,8 @@ public class ControllerConf extends PropertiesConfiguration {
   // Potentially same as data dir if local
   private static final String LOCAL_TEMP_DIR = "controller.local.temp.dir";
   private static final String ZK_STR = "controller.zk.str";
-  private static final String UPDATE_SEGMENT_STATE_MODEL = "controller.update_segment_state_model"; // boolean: Update the statemodel on boot?
+  private static final String UPDATE_SEGMENT_STATE_MODEL = "controller.update_segment_state_model";
+  // boolean: Update the statemodel on boot?
   private static final String HELIX_CLUSTER_NAME = "controller.helix.cluster.name";
   private static final String CLUSTER_TENANT_ISOLATION_ENABLE = "cluster.tenant.isolation.enable";
   private static final String CONSOLE_WEBAPP_ROOT_PATH = "controller.query.console";
@@ -47,7 +49,8 @@ public class ControllerConf extends PropertiesConfiguration {
   private static final String VALIDATION_MANAGER_FREQUENCY_IN_SECONDS = "controller.validation.frequencyInSeconds";
   private static final String STATUS_CHECKER_FREQUENCY_IN_SECONDS = "controller.statuschecker.frequencyInSeconds";
   private static final String REALTIME_SEGMENT_RELOCATOR_FREQUENCY = "controller.realtime.segment.relocator.frequency";
-  private static final String STATUS_CHECKER_WAIT_FOR_PUSH_TIME_IN_SECONDS = "controller.statuschecker.waitForPushTimeInSeconds";
+  private static final String STATUS_CHECKER_WAIT_FOR_PUSH_TIME_IN_SECONDS =
+      "controller.statuschecker.waitForPushTimeInSeconds";
   private static final String SERVER_ADMIN_REQUEST_TIMEOUT_SECONDS = "server.request.timeoutSeconds";
   private static final String SEGMENT_COMMIT_TIMEOUT_SECONDS = "controller.realtime.segment.commit.timeoutSeconds";
   private static final String DELETED_SEGMENTS_RETENTION_IN_DAYS = "controller.deleted.segments.retentionInDays";
@@ -57,10 +60,13 @@ public class ControllerConf extends PropertiesConfiguration {
   private static final String JERSEY_ADMIN_API_PORT = "jersey.admin.api.port";
   private static final String JERSEY_ADMIN_IS_PRIMARY = "jersey.admin.isprimary";
   private static final String ACCESS_CONTROL_FACTORY_CLASS = "controller.admin.access.control.factory.class";
+  private static final String CONFIG_OF_PERIODIC_TASK_SCHEDULER_INIT_DELAY_IN_SECONDS =
+      "controller.periodicTask.initDelayInSeconds";
   // Amount of the time the segment can take from the beginning of upload to the end of upload. Used when parallel push
   // protection is enabled. If the upload does not finish within the timeout, next upload can override the previous one.
   private static final String SEGMENT_UPLOAD_TIMEOUT_IN_MILLIS = "controller.segment.upload.timeoutInMillis";
-  private static final String REALTIME_SEGMENT_METADATA_COMMIT_NUMLOCKS = "controller.realtime.segment.metadata.commit.numLocks";
+  private static final String REALTIME_SEGMENT_METADATA_COMMIT_NUMLOCKS =
+      "controller.realtime.segment.metadata.commit.numLocks";
 
   // Defines the kind of storage and the underlying PinotFS implementation
   private static final String PINOT_FS_FACTORY_CLASS_PREFIX = "controller.storage.factory.class";
@@ -82,6 +88,7 @@ public class ControllerConf extends PropertiesConfiguration {
       "com.linkedin.pinot.controller.api.access.AllowAllAccessFactory";
   private static final long DEFAULT_SEGMENT_UPLOAD_TIMEOUT_IN_MILLIS = 600_000L; // 10 minutes
   private static final int DEFAULT_REALTIME_SEGMENT_METADATA_COMMIT_NUMLOCKS = 64;
+  private static final long DEFAULT_PERIODIC_TASK_SCHEDULER_INIT_DELAY_IN_SECONDS = 120L;
 
   private static final String ENABLE_STORAGE_QUOTA_CHECK = "controller.enable.storage.quota.check";
   private static final boolean DEFAULT_STORAGE_QUOTA_CHECK = true;
@@ -117,7 +124,8 @@ public class ControllerConf extends PropertiesConfiguration {
     setProperty(PINOT_FS_FACTORY_CLASS_LOCAL, DEFAULT_PINOT_FS_FACTORY_CLASS_LOCAL);
 
     if (pinotFSFactoryClasses != null) {
-      pinotFSFactoryClasses.getKeys().forEachRemaining(key -> setProperty((String) key, pinotFSFactoryClasses.getProperty((String) key)));
+      pinotFSFactoryClasses.getKeys()
+          .forEachRemaining(key -> setProperty((String) key, pinotFSFactoryClasses.getProperty((String) key)));
     }
   }
 
@@ -136,7 +144,7 @@ public class ControllerConf extends PropertiesConfiguration {
     return ControllerConf.class.getClassLoader().getResource("webapp").toExternalForm();
   }
 
-  public void setQueryConsoleUseHttps(boolean useHttps){
+  public void setQueryConsoleUseHttps(boolean useHttps) {
     setProperty(CONSOLE_WEBAPP_USE_HTTPS, useHttps);
   }
 
@@ -212,7 +220,7 @@ public class ControllerConf extends PropertiesConfiguration {
 
   public int getSegmentCommitTimeoutSeconds() {
     if (containsKey(SEGMENT_COMMIT_TIMEOUT_SECONDS)) {
-      return Integer.parseInt((String)getProperty(SEGMENT_COMMIT_TIMEOUT_SECONDS));
+      return Integer.parseInt((String) getProperty(SEGMENT_COMMIT_TIMEOUT_SECONDS));
     }
     return SegmentCompletionProtocol.getDefaultMaxSegmentCommitTimeSeconds();
   }
@@ -234,13 +242,13 @@ public class ControllerConf extends PropertiesConfiguration {
     // The set method converted comma separated string into ArrayList, so need to convert back to String here.
     if (zkAddressObj instanceof ArrayList) {
       List<String> zkAddressList = (ArrayList<String>) zkAddressObj;
-      String[] zkAddress =  zkAddressList.toArray(new String[0]);
+      String[] zkAddress = zkAddressList.toArray(new String[0]);
       return StringUtil.join(",", zkAddress);
     } else if (zkAddressObj instanceof String) {
       return (String) zkAddressObj;
     } else {
       throw new RuntimeException("Unexpected data type for zkAddress PropertiesConfiguration, expecting String but got "
-              + zkAddressObj.getClass().getName());
+          + zkAddressObj.getClass().getName());
     }
   }
 
@@ -333,7 +341,6 @@ public class ControllerConf extends PropertiesConfiguration {
     setProperty(STATUS_CHECKER_WAIT_FOR_PUSH_TIME_IN_SECONDS, Integer.toString(statusCheckerWaitForPushTimeInSeconds));
   }
 
-
   public long getExternalViewOnlineToOfflineTimeout() {
     if (containsKey(EXTERNAL_VIEW_ONLINE_TO_OFFLINE_TIMEOUT)) {
       return Integer.parseInt((String) getProperty(EXTERNAL_VIEW_ONLINE_TO_OFFLINE_TIMEOUT));
@@ -418,5 +425,10 @@ public class ControllerConf extends PropertiesConfiguration {
 
   public boolean getEnableStorageQuotaCheck() {
     return getBoolean(ENABLE_STORAGE_QUOTA_CHECK, DEFAULT_STORAGE_QUOTA_CHECK);
+  }
+
+  public long getPeriodicTaskInitDelayInSeconds() {
+    return getLong(CONFIG_OF_PERIODIC_TASK_SCHEDULER_INIT_DELAY_IN_SECONDS,
+        DEFAULT_PERIODIC_TASK_SCHEDULER_INIT_DELAY_IN_SECONDS);
   }
 }
