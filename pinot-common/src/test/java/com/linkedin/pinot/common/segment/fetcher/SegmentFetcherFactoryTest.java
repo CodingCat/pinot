@@ -88,7 +88,7 @@ public class SegmentFetcherFactoryTest {
     public int initCalled = 0;
 
     @Override
-    public void init(Configuration configs) {
+    public void init(Configuration configs, String protocol) {
       initCalled++;
     }
 
